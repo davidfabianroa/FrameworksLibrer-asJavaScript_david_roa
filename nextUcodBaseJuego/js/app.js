@@ -1,51 +1,13 @@
-//punto 1. cambia el color del titulo y alterna 
-function colorBlink(selector) {
-	$(selector).animate({
-			opacity: '1',
-		}, {
-			step: function () {
-				$(this).css('color', 'white');
-			},
-			queue: true
-		})
-		.animate({
-			opacity: '1'
-		}, {
-			step: function () {
-				$(this).css('color', 'yellow');
-			},
-			queue: true
-		}, 600)
-		.delay(1000)
-		.animate({
-			opacity: '1'
-		}, {
-			step: function () {
-				$(this).css('color', 'white');
-			},
-			queue: true
-		})
-		.animate({
-			opacity: '1'
-		}, {
-			step: function () {
-				$(this).css('color', 'yellow');
-				colorBlink('h1.main-titulo');
-			},
-			queue: true
-		});
-}
-
-//punto 2. funcion para generar números aleatorios
-function getRandomInt(min, max) {
-	min = Math.ceil(min);
-	max = Math.floor(max);
-	return Math.floor(Math.random() * (max - min)) + min;
-}
-
-// obtiene filas de dulces o columas
-function giveCandyArrays(arrayType, index) {
-
+//funcion que permite destellos de color en el titulo
+function parpadear(selector) {
+	$(selector).animate({opacity: '1',}, {step: function () {$(this).css('color', 'white');},queue: true})
+		.animate({opacity: '1'}, {step: function () {$(this).css('color', 'yellow');parpadear('h1.main-titulo');},queue: true})
+		.animate({opacity: '1'}, {step: function () {$(this).css('color', 'white');	},queue: true})
+		.animate({opacity: '1'}, {step: function () {$(this).css('color', 'yellow');},queue: true}, 600).delay(1000);}
+// funcion de números al azar
+function numeros_azar(minimo, maximo) {minimo = Math.ceil(minimo);maximo = Math.floor(maximo);return Math.floor(Math.random() * (maximo - minimo)) + minimo;}
+// definicion de variables para filas  o columas
+function obtener_arreglos(tipo, indice) {
 	var candyCol1 = $('.col-1').children();
 	var candyCol2 = $('.col-2').children();
 	var candyCol3 = $('.col-3').children();
@@ -58,32 +20,32 @@ function giveCandyArrays(arrayType, index) {
 		candyCol5, candyCol6, candyCol7
 	]);
 
-	if (typeof index === 'number') {
-		var candyRow = $([candyCol1.eq(index), candyCol2.eq(index), candyCol3.eq(index),
-			candyCol4.eq(index), candyCol5.eq(index), candyCol6.eq(index),
-			candyCol7.eq(index)
+	if (typeof indice === 'number') {
+		var candyRow = $([candyCol1.eq(indice), candyCol2.eq(indice), candyCol3.eq(indice),
+			candyCol4.eq(indice), candyCol5.eq(indice), candyCol6.eq(indice),
+			candyCol7.eq(indice)
 		]);
 	} else {
-		index = '';
+		indice = '';
 	}
 
-	if (arrayType === 'columns') {
+	if (tipo === 'columns') {
 		return candyColumns;
-	} else if (arrayType === 'rows' && index !== '') {
+	} else if (tipo === 'rows' && indice !== '') {
 		return candyRow;
 	}
 }
 
 // arreglos de filas
-function candyRows(index) {
-	var candyRow = giveCandyArrays('rows', index);
+function candyRows(indice) {
+	var candyRow = obtener_arreglos('rows', indice);
 	return candyRow;
 }
 
 // arreglos de colunmnas
-function candyColumns(index) {
-	var candyColumn = giveCandyArrays('columns');
-	return candyColumn[index];
+function candyColumns(indice) {
+	var candyColumn = obtener_arreglos('columns');
+	return candyColumn[indice];
 }
 
 //punto 3. Valida si hay dulces que se eliminarán en una columna
@@ -233,7 +195,7 @@ function fillBoard() {
 		var candys = $(this).children().length;
 		var agrega = top - candys;
 		for (var i = 0; i < agrega; i++) {
-			var candyType = getRandomInt(1, 5);
+			var candyType = numeros_azar(1, 5);
 			if (i === 0 && candys < 1) {
 				$(this).append('<img src="image/' + candyType + '.png" class="element"></img>');
 			} else {
@@ -286,10 +248,10 @@ function enableCandyEvents() {
 
 //hace que el caramelo sea solido al moverse
 function constrainCandyMovement(event, candyDrag) {
-	candyDrag.position.top = Math.min(100, candyDrag.position.top);
-	candyDrag.position.bottom = Math.min(100, candyDrag.position.bottom);
-	candyDrag.position.left = Math.min(100, candyDrag.position.left);
-	candyDrag.position.right = Math.min(100, candyDrag.position.right);
+	candyDrag.position.top = Math.minimo(100, candyDrag.position.top);
+	candyDrag.position.bottom = Math.minimo(100, candyDrag.position.bottom);
+	candyDrag.position.left = Math.minimo(100, candyDrag.position.left);
+	candyDrag.position.right = Math.minimo(100, candyDrag.position.right);
 }
 
 //reemplaza a los caramelos anteriores
@@ -326,5 +288,74 @@ function updateMoves() {
 	$('#movimientos-text').text(result);
 }
 
+//eliminacion automatica de los elementos
+function deletesCandyAnimation() {
+	disableCandyEvents();
+	$('img.delete').effect('pulsate', 400);
+	$('img.delete').animate({
+			opacity: '0'
+		}, {
+			duration: 300
+		})
+		.animate({
+			opacity: '0'
+		}, {
+			duration: 400,
+			complete: function () {
+				deletesCandy()
+					.then(checkBoardPromise)
+					.catch(showPromiseError);
+			},
+			queue: true
+		});
+}
 
+//llenado automatico de los espacios con elementos 
+function showPromiseError(error) {
+	console.log(error);
+}
+
+function deletesCandy() {
+	return new Promise(function (resolve, reject) {
+		if ($('img.delete').remove()) {
+			resolve(true);
+		} else {
+			reject('No se pudo eliminar Candy...');
+		}
+	})
+}
+
+//punto 4 y 6. temporizador y boton reiniciar
+//cambia el aspecto de la página
+//final del juego
+function endGame() {
+	$('div.panel-tablero, div.time').effect('fold');
+	$('h1.main-titulo').addClass('title-over')
+		.text('Gracias por jugar!');
+	$('div.score, div.moves, div.panel-score').width('100%');
+	
+}
+
+// inicia el juego
+function initGame() {
+
+	parpadear('h1.main-titulo');
+
+	$('.btn-reinicio').click(function () {
+		if ($(this).text() === 'Reiniciar') {
+			location.reload(true);
+		}
+		checkBoard();
+		$(this).text('Reiniciar');
+		$('#timer').startTimer({
+			onComplete: endGame
+		})
+	});
+}
+
+// Prepara el juego
+$(function() {
+	initGame();
+	
+});
 

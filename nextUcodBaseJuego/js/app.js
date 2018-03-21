@@ -7,156 +7,126 @@ function parpadear(selector) {
 // funcion de números al azar
 function numeros_azar(minimo, maximo) {minimo = Math.ceil(minimo);maximo = Math.floor(maximo);return Math.floor(Math.random() * (maximo - minimo)) + minimo;}
 // definicion de variables para filas  o columas
-function obtener_arreglos(tipo, indice) {
-	var candyCol1 = $('.col-1').children();
-	var candyCol2 = $('.col-2').children();
-	var candyCol3 = $('.col-3').children();
-	var candyCol4 = $('.col-4').children();
-	var candyCol5 = $('.col-5').children();
-	var candyCol6 = $('.col-6').children();
-	var candyCol7 = $('.col-7').children();
-
-	var candyColumns = $([candyCol1, candyCol2, candyCol3, candyCol4,
-		candyCol5, candyCol6, candyCol7
-	]);
-
-	if (typeof indice === 'number') {
-		var candyRow = $([candyCol1.eq(indice), candyCol2.eq(indice), candyCol3.eq(indice),
-			candyCol4.eq(indice), candyCol5.eq(indice), candyCol6.eq(indice),
-			candyCol7.eq(indice)
-		]);
-	} else {
-		indice = '';
-	}
-
-	if (tipo === 'columns') {
-		return candyColumns;
-	} else if (tipo === 'rows' && indice !== '') {
-		return candyRow;
-	}
+function obtener_arreglos(tipo, indice) {var columna1 = $('.col-1').children();	var columna2 = $('.col-2').children();var columna3 = $('.col-3').children();var columna4 = $('.col-4').children();var columna5 = $('.col-5').children();var columna6 = $('.col-6').children();var columna7 = $('.col-7').children();
+	var cantidad_columnas = $([columna1, columna2, columna3, columna4,columna5, columna6, columna7	]);
+	if (typeof indice === 'number') {var fila_mod = $([columna1.eq(indice), columna2.eq(indice), columna3.eq(indice),columna4.eq(indice), columna5.eq(indice), columna6.eq(indice),columna7.eq(indice)]);}
+	else {indice = '';}
+	if (tipo === 'columns') {return cantidad_columnas;} 
+	else if (tipo === 'rows' && indice !== '') {return fila_mod;}}
+// filas
+function fila_modelos(indice) {
+	var fila_mod = obtener_arreglos('rows', indice);return fila_mod;}
+// colunmnas
+function cantidad_columnas(indice) {var columna_modelos = obtener_arreglos('columns');return columna_modelos[indice];
 }
-
-// arreglos de filas
-function candyRows(indice) {
-	var candyRow = obtener_arreglos('rows', indice);
-	return candyRow;
-}
-
-// arreglos de colunmnas
-function candyColumns(indice) {
-	var candyColumn = obtener_arreglos('columns');
-	return candyColumn[indice];
-}
-
-//punto 3. Valida si hay dulces que se eliminarán en una columna
-function columnValidation() {
-	for (var j = 0; j < 7; j++) {
-		var counter = 0;
-		var candyPosition = [];
+//verificar si hay tres dulces del mismo tipo en línea
+function verificacion() {
+	for (var loco = 0; loco < 7; loco++) {var dulces_pantalla = 0;
+		var pos = [];
 		var extraCandyPosition = [];
-		var candyColumn = candyColumns(j);
-		var comparisonValue = candyColumn.eq(0);
+		var columna_modelos = cantidad_columnas(loco);
+		var comparisonValue = columna_modelos.eq(0);
 		var gap = false;
-		for (var i = 1; i < candyColumn.length; i++) {
+		for (var i = 1; i < columna_modelos.length; i++) {
 			var srcComparison = comparisonValue.attr('src');
-			var srcCandy = candyColumn.eq(i).attr('src');
+			var srcCandy = columna_modelos.eq(i).attr('src');
 
 			if (srcComparison != srcCandy) {
-				if (candyPosition.length >= 3) {
+				if (pos.length >= 3) {
 					gap = true;
 				} else {
-					candyPosition = [];
+					pos = [];
 				}
-				counter = 0;
+				dulces_pantalla = 0;
 			} else {
-				if (counter == 0) {
+				if (dulces_pantalla == 0) {
 					if (!gap) {
-						candyPosition.push(i - 1);
+						pos.push(i - 1);
 					} else {
 						extraCandyPosition.push(i - 1);
 					}
 				}
 				if (!gap) {
-					candyPosition.push(i);
+					pos.push(i);
 				} else {
 					extraCandyPosition.push(i);
 				}
-				counter += 1;
+				dulces_pantalla += 1;
 			}
-			comparisonValue = candyColumn.eq(i);
+			comparisonValue = columna_modelos.eq(i);
 		}
 		if (extraCandyPosition.length > 2) {
-			candyPosition = $.merge(candyPosition, extraCandyPosition);
+			pos = $.merge(pos, extraCandyPosition);
 		}
-		if (candyPosition.length <= 2) {
-			candyPosition = [];
+		if (pos.length <= 2) {
+			pos = [];
 		}
-		candyCount = candyPosition.length;
+		candyCount = pos.length;
 		if (candyCount >= 3) {
-			deleteColumnCandy(candyPosition, candyColumn);
+			deleteColumnCandy(pos, columna_modelos);
 			setScore(candyCount);
 		}
 	}
 }
-function deleteColumnCandy(candyPosition, candyColumn) {
-	for (var i = 0; i < candyPosition.length; i++) {
-		candyColumn.eq(candyPosition[i]).addClass('delete');
+function deleteColumnCandy(pos, columna_modelos) {
+	for (var i = 0; i < pos.length; i++) {
+		columna_modelos.eq(pos[i]).addClass('delete');
 	}
 }
 
 // Valida si hay dulces que deben eliminarse en una fila
 function rowValidation() {
-	for (var j = 0; j < 6; j++) {
-		var counter = 0;
-		var candyPosition = [];
+	for (var perro = 0; perro < 6; perro++) {
+		var dulces_pantalla = 0;
+		var pos = [];
 		var extraCandyPosition = [];
-		var candyRow = candyRows(j);
-		var comparisonValue = candyRow[0];
+		var fila_mod = fila_modelos(perro);
+		var comparisonValue = fila_mod[0];
 		var gap = false;
-		for (var i = 1; i < candyRow.length; i++) {
+		for (var i = 1; i < fila_mod.length; i++) {
 			var srcComparison = comparisonValue.attr('src');
-			var srcCandy = candyRow[i].attr('src');
+			var srcCandy = fila_mod[i].attr('src');
 
 			if (srcComparison != srcCandy) {
-				if (candyPosition.length >= 3) {
+				if (pos.length >= 3) {
 					gap = true;
 				} else {
-					candyPosition = [];
+					pos = [];
 				}
-				counter = 0;
+				dulces_pantalla = 0;
 			} else {
-				if (counter == 0) {
+				if (dulces_pantalla == 0) {
 					if (!gap) {
-						candyPosition.push(i - 1);
+						pos.push(i - 1);
 					} else {
 						extraCandyPosition.push(i - 1);
 					}
 				}
 				if (!gap) {
-					candyPosition.push(i);
+					pos.push(i);
 				} else {
 					extraCandyPosition.push(i);
 				}
-				counter += 1;
+				dulces_pantalla += 1;
 			}
-			comparisonValue = candyRow[i];
+			comparisonValue = fila_mod[i];
 		}
 		if (extraCandyPosition.length > 2) {
-			candyPosition = $.merge(candyPosition, extraCandyPosition);
+			pos = $.merge(pos, extraCandyPosition);
 		}
-		if (candyPosition.length <= 2) {
-			candyPosition = [];
+		if (pos.length <= 2) {
+			pos = [];
 		}
-		candyCount = candyPosition.length;
+		candyCount = pos.length;
 		if (candyCount >= 3) {
-			deleteHorizontal(candyPosition, candyRow);
+			deleteHorizontal(pos, fila_mod);
 			setScore(candyCount);
 		}
 	}
 }
-function deleteHorizontal(candyPosition, candyRow) {
-	for (var i = 0; i < candyPosition.length; i++) {
-		candyRow[candyPosition[i]].addClass('delete');
+function deleteHorizontal(pos, fila_mod) {
+	for (var i = 0; i < pos.length; i++) {
+		fila_mod[pos[i]].addClass('delete');
 	}
 }
 
@@ -209,7 +179,7 @@ function fillBoard() {
 
 // Si hay dulces que borrar
 function setValidations() {
-	columnValidation();
+	verificacion();
 	rowValidation();
 	// Si hay dulces que borrar
 	if ($('img.delete').length !== 0) {
